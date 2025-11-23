@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: postgres-auth
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: auth_service_db
+      POSTGRES_USER: user_service_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_service_user -d auth_service_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  authservice:
+    build: .
+    container_name: authservice
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - JWT_SECRET=c2VjcmV0LWtleS10aGlzLWlzLXZlcnmteWVyeS1sb25nLWJhc2U2NC1rZXk=
+      - DB_USERNAME=user_service_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+
+volumes:
+  postgres-auth-data:

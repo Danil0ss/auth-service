@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: user_service_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-auth-data:/var/lib/postgresql/data
     healthcheck:
@@ -18,6 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - my-app-net
 
   authservice:
     build: .
@@ -33,6 +35,12 @@ services:
     depends_on:
       postgres-auth:
         condition: service_healthy
+    networks:
+      - my-app-net
 
 volumes:
   postgres-auth-data:
+
+networks:
+  my-app-net:
+    external: true

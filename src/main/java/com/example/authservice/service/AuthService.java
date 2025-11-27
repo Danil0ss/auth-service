@@ -72,14 +72,13 @@ public class AuthService {
         try {
             Long userId = jwtService.extractUserId(refreshToken);
 
-            UserCredentials user = userCredentialsRepository.findById(userId)
+            UserCredentials user = userCredentialsRepository.findByUserId(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             String newAccessToken = jwtService.generateAccessToken(userId, user.getRole());
             String newRefreshToken = jwtService.generateRefreshToken(userId);
 
             return new TokenResponseDTO(newAccessToken, newRefreshToken);
-
         } catch (Exception e) {
             throw new RuntimeException("Invalid refresh token: " + e.getMessage());
         }

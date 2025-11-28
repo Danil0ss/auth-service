@@ -85,8 +85,8 @@ public class AuthService {
     }
 
     private Long createUserInUserService(RegisterRequestDTO dto) {
-//        String url = "http://localhost:8081/api/users/internal/create";//для local
-        String url = "http://user-service:8081/api/users/internal/create";//для docker
+        String url = "http://localhost:8081/api/users/internal/create";//для local
+        // String url = "http://user-service:8081/api/users/internal/create";//для docker
 
         Map<String, Object> request = new HashMap<>();
         request.put("name", dto.name());

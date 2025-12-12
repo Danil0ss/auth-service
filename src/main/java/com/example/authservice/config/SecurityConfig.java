@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/refresh-token").permitAll()
+                        .requestMatchers("/api/auth/internal/**").permitAll()
                         .requestMatchers("/api/auth/admin/**").permitAll()
                         .requestMatchers("/api/auth/me").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

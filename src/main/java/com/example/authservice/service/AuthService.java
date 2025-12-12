@@ -6,16 +6,11 @@ import com.example.authservice.dto.TokenResponseDTO;
 import com.example.authservice.entity.Role;
 import com.example.authservice.entity.UserCredentials;
 import com.example.authservice.repository.UserCredentialsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Service
@@ -25,27 +20,27 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserCredentialsRepository userCredentialsRepository;
     private final JwtService jwtService;
-    private final RestTemplate restTemplate;
+
 
     @Transactional
     public TokenResponseDTO register(RegisterRequestDTO dto) {
-
         if (userCredentialsRepository.existsByEmail(dto.email())) {
-            throw new RuntimeException("User with email " + dto.email() + " already exists");
+            throw new RuntimeException("User already exists");
         }
-
-        Long userId = createUserInUserService(dto);
 
         UserCredentials credentials = new UserCredentials();
         credentials.setEmail(dto.email());
         credentials.setHashedPassword(passwordEncoder.encode(dto.password()));
         credentials.setRole(Role.USER);
-        credentials.setUserId(userId);
+
+        credentials.setUserId(-System.nanoTime());
 
         userCredentialsRepository.save(credentials);
 
-        String accessToken = jwtService.generateAccessToken(userId, Role.USER);
-        String refreshToken = jwtService.generateRefreshToken(userId);
+        Long authId = credentials.getId();
+
+        String accessToken = jwtService.generateAccessToken(authId, Role.USER);
+        String refreshToken = jwtService.generateRefreshToken(authId);
 
         return new TokenResponseDTO(accessToken, refreshToken);
     }
@@ -84,23 +79,19 @@ public class AuthService {
         }
     }
 
-    private Long createUserInUserService(RegisterRequestDTO dto) {
-        String url = "http://localhost:8081/api/users/internal/create";//для local
-        // String url = "http://user-service:8081/api/users/internal/create";//для docker
 
-        Map<String, Object> request = new HashMap<>();
-        request.put("name", dto.name());
-        request.put("surname", dto.surname());
-        request.put("birthDate", dto.birthDate());
-        request.put("email", dto.email());
-
-        ResponseEntity<Long> response = restTemplate.postForEntity(url, request, Long.class);
-
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            return response.getBody();
-        } else {
-            throw new RuntimeException("Failed to create user in UserService");
-        }
+    @Transactional
+    public void deleteUserByEmail(String email) {
+        UserCredentials user = userCredentialsRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found for rollback"));
+        userCredentialsRepository.delete(user);
     }
 
+    @Transactional
+    public void updateUserId(String email, Long userId) {
+        UserCredentials user = userCredentialsRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setUserId(userId);
+        userCredentialsRepository.save(user);
+    }
 }

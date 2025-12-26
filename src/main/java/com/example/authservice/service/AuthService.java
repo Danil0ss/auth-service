@@ -50,6 +50,28 @@ public class AuthService {
         return new TokenResponseDTO(accessToken, refreshToken);
     }
 
+    public TokenResponseDTO registerAdmin(RegisterRequestDTO dto){
+        if (userCredentialsRepository.existsByEmail(dto.email())) {
+            throw new RuntimeException("Admin with email " + dto.email() + " already exists");
+        }
+
+        Long userId = createUserInUserService(dto);
+
+        UserCredentials credentials = new UserCredentials();
+        credentials.setEmail(dto.email());
+        credentials.setHashedPassword(passwordEncoder.encode(dto.password()));
+        credentials.setRole(Role.ADMIN);
+        credentials.setUserId(userId);
+
+        userCredentialsRepository.save(credentials);
+
+        String accessToken = jwtService.generateAccessToken(userId, Role.ADMIN);
+        String refreshToken = jwtService.generateRefreshToken(userId);
+
+        return new TokenResponseDTO(accessToken, refreshToken);
+
+    }
+
     public TokenResponseDTO login(LoginRequestDTO requestDTO){
         String email=requestDTO.email();
         String password= requestDTO.password();
@@ -84,10 +106,13 @@ public class AuthService {
         }
     }
 
-    private Long createUserInUserService(RegisterRequestDTO dto) {
-        String url = "http://localhost:8081/api/users/internal/create";//для local
-        // String url = "http://user-service:8081/api/users/internal/create";//для docker
+    public Boolean isEmailTaken(String email){
+        if(email==null || email.isBlank()) return true;
+        return userCredentialsRepository.existsByEmail(email);
+    }
 
+    private Long createUserInUserService(RegisterRequestDTO dto) {
+        String url = "http://localhost:8081/api/users/internal/create";
         Map<String, Object> request = new HashMap<>();
         request.put("name", dto.name());
         request.put("surname", dto.surname());

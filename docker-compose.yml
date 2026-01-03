@@ -32,6 +32,7 @@ services:
       - JWT_SECRET=c2VjcmV0LWtleS10aGlzLWlzLXZlcnmteWVyeS1sb25nLWJhc2U2NC1rZXk=
       - DB_USERNAME=user_service_user
       - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET: c2VjcmV0LWtleS10aGlzLWlzLXZlcnmteWVyeS1sb25nLWJhc2U2NC1rZXk=
     depends_on:
       postgres-auth:
         condition: service_healthy

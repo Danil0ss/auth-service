@@ -1,0 +1,19 @@
+target/
+*.log
+.git
+.gitignore
+.idea/
+*.iml
+.mvn/
+mvnw
+mvnw.cmd
+
+# Важно! Не копируем локальные конфиги с секретами
+application-local.properties
+application-docker.properties
+.env
+*.env
+
+
+README.md
+.dockerignore

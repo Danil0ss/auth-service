@@ -19,20 +19,22 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @AllArgsConstructor
 public class SecurityConfig {
 
-
     private final JwtAuthenticationFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+
+                // ВАЖНО: ОТКЛЮЧАЕМ CORS ЗДЕСЬ (его делает Gateway)
+                .cors(cors -> cors.disable())
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/gateway/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/refresh-token").permitAll()
                         .requestMatchers("/api/auth/internal/**").permitAll()
                         .requestMatchers("/api/auth/admin/**").permitAll()
-                        .requestMatchers("/api/auth/me").hasAnyRole("ADMIN")
                         .requestMatchers("/api/auth/validate-email").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
@@ -56,4 +58,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
 }

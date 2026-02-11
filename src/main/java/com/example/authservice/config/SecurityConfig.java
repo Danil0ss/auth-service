@@ -32,10 +32,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/refresh-token").permitAll()
                         .requestMatchers("/api/auth/internal/**").permitAll()
                         .requestMatchers("/api/auth/admin/**").permitAll()
-                        .requestMatchers("/api/auth/me").hasAnyRole("ADMIN")
+                        .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/validate-email").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 )
 

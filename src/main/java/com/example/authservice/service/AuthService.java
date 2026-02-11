@@ -21,9 +21,14 @@ public class AuthService {
     private final UserCredentialsRepository userCredentialsRepository;
     private final JwtService jwtService;
 
-
     @Transactional
     public TokenResponseDTO register(RegisterRequestDTO dto) {
+        return register(dto, Role.USER);
+    }
+
+
+    @Transactional
+    public TokenResponseDTO register(RegisterRequestDTO dto, Role role) {
         if (userCredentialsRepository.existsByEmail(dto.email())) {
             throw new RuntimeException("User already exists");
         }
@@ -31,15 +36,14 @@ public class AuthService {
         UserCredentials credentials = new UserCredentials();
         credentials.setEmail(dto.email());
         credentials.setHashedPassword(passwordEncoder.encode(dto.password()));
-        credentials.setRole(Role.USER);
 
+        credentials.setRole(role);
         credentials.setUserId(-System.nanoTime());
 
         userCredentialsRepository.save(credentials);
 
         Long authId = credentials.getId();
-
-        String accessToken = jwtService.generateAccessToken(authId, Role.USER);
+        String accessToken = jwtService.generateAccessToken(authId, role);
         String refreshToken = jwtService.generateRefreshToken(authId);
 
         return new TokenResponseDTO(accessToken, refreshToken);

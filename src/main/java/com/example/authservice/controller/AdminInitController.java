@@ -24,6 +24,6 @@ public class AdminInitController {
         if (repo.existsByRole(Role.ADMIN)) {
             throw new RuntimeException("Admin already exists");
         }
-        return authService.register(dto);
+        return authService.register(dto, Role.ADMIN);
     }
 }

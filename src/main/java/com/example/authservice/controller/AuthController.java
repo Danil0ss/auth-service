@@ -7,10 +7,14 @@ import com.example.authservice.dto.TokenResponseDTO;
 import com.example.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,5 +60,25 @@ public class AuthController {
         String role = authentication.getAuthorities().iterator().next().getAuthority();
 
         return ResponseEntity.ok("Привет! Твой ID: " + userId + ", твоя роль: " + role);
+    }
+
+    @PutMapping("/internal/sync-id")
+    public ResponseEntity<?> syncUserId(@RequestParam String email, @RequestParam Long userId) {
+        try {
+            authService.updateUserId(email, userId);
+            return ResponseEntity.ok("User ID synchronized successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Sync failed");
+        }
+    }
+
+    @DeleteMapping("/internal/rollback/{email}")
+    public ResponseEntity<?> rollbackRegistration(@PathVariable String email) {
+        try {
+            authService.deleteUserByEmail(email);
+            return ResponseEntity.ok("Rollback successful");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Rollback failed");
+        }
     }
 }

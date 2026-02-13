@@ -7,10 +7,12 @@ RUN mvn clean package -DskipTests -B
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=builder /app/target/authservice-0.0.1-SNAPSHOT.jar app.jar
+
+COPY --from=builder /app/target/*.jar app.jar
 
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=docker"]
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

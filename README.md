@@ -6,7 +6,7 @@
 
 ## Стек технологий
 
-* **Core:** Java 21, Spring Boot 3.x
+* **Core:** Java 21, Spring Boot 3.5
 * **Security:** Spring Security, BCrypt (хеширование паролей с уникальной солью)
 * **Token:** JWT (JSON Web Tokens) — генерация и валидация
 * **Database:** PostgreSQL (хранение учетных данных пользователей)
